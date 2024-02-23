@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace URLShortener.Data.Entities
+namespace URLShortener.Business.DTOs
 {
     public class UserDTO
     {

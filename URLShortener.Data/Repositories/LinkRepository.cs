@@ -38,6 +38,18 @@ namespace URLShortener.Data.Repositories
             return link;
         }
 
+        public async Task<Link> GetLinkByOriginalURLAsync(string originalURL)
+        {
+            var link = await _context.Link.FirstOrDefaultAsync(l => l.OriginalURL == originalURL);
+
+            return link;
+        }
+
+        public async Task<IEnumerable<Link>> GetAllLinksAsync()
+        {
+            return await _context.Link.ToListAsync();
+        }
+
         public async Task DeleteLinkByIdAsync(int id)
         {
             var link = await _context.Link.FirstOrDefaultAsync(l => l.Id == id);

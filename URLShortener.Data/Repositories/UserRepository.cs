@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using URLShortener.Data.Entities;
 using URLShortener.Data.Interfaces;
 
@@ -32,15 +31,6 @@ namespace URLShortener.Data.Repositories
             var user = await _context.User.FirstOrDefaultAsync(u => u.Id == id);
 
             return user;
-        }
-
-        [Authorize("AdminPolicy")]
-        public async Task DeleteUserByIdAsync(int id)
-        {
-            var user = await _context.User.FirstOrDefaultAsync(u => u.Id == id);
-
-            _context.User.Remove(user);
-            await _context.SaveChangesAsync();
         }
     }
 }

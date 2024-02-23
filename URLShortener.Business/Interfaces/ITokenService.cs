@@ -13,5 +13,6 @@ namespace URLShortener.Business.Interfaces
         public string CreateToken(User user);
         public bool ValidateToken(string token);
         public int GetUserIdFromToken();
+        public bool IsAdminFromToken();
     }
 }

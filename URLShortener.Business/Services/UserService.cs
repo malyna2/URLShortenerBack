@@ -1,10 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using URLShortener.Business.Interfaces;
+using URLShortener.Business.DTOs;
 using URLShortener.Data.Entities;
 using URLShortener.Data.Interfaces;
 
@@ -23,11 +19,19 @@ namespace URLShortener.Business.Services
             _tokenService = tokenService;
         }
 
-        public async Task RegisterUserAsync(UserRequestDTO userRequestDto)
+        public async Task<string> RegisterUserAsync(UserRequestDTO userRequestDto)
         {
+            if (await _userRepository.GetUserByUsernameAsync(userRequestDto.Username) != null)
+            {
+                throw new InvalidDataException("User already exists");
+            }
             var user = _mapper.Map<User>(userRequestDto);
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userRequestDto.Password);
             await _userRepository.CreateUserAsync(user);
+
+            var token = _tokenService.CreateToken(user);
+
+            return token;
         }
 
         public async Task<string> LoginUserAsync(UserRequestDTO userRequestDto)
@@ -35,20 +39,18 @@ namespace URLShortener.Business.Services
             var user = await _userRepository.GetUserByUsernameAsync(userRequestDto.Username);
             if (user == null)
             {
-                throw new Exception("User not found");
+                throw new UnauthorizedAccessException("User not found");
             }
 
             if (!BCrypt.Net.BCrypt.Verify(userRequestDto.Password, user.PasswordHash))
             {
-                throw new Exception("Invalid password");
+                throw new UnauthorizedAccessException("Invalid password");
             }
 
             var token = _tokenService.CreateToken(user);
 
             return token;
         }
-
-        
 
         public async Task<User> GetUserByUsernameAsync(string email)
         {
@@ -58,11 +60,6 @@ namespace URLShortener.Business.Services
         public async Task<User> GetUserByIdAsync(int id)
         {
             return await _userRepository.GetUserByIdAsync(id);
-        }
-
-        public async Task DeleteUserByIdAsync(int id)
-        {
-            await _userRepository.DeleteUserByIdAsync(id);
         }
     }
 }

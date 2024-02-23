@@ -12,6 +12,7 @@ namespace URLShortener.Business.Interfaces
         public Task CreateLinkAsync(string originalLink);
         public Task<string> GetOriginalLinkByShortenedURLAsync(string shortenedURL);
         public Task<Link> GetLinkByIdAsync(int id);
+        public Task<IEnumerable<Link>> GetAllLinksAsync();
         public Task DeleteLinkByIdAsync(int id);
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using URLShortener.Data.Entities;
 using URLShortener.Business.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace URLShortener.API.Controllers
 {
@@ -19,31 +20,73 @@ namespace URLShortener.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> CreateLinkAsync(string linkOriginal)
         {
-            await _linkService.CreateLinkAsync(linkOriginal);
-            return Ok();
+            try
+            {
+                await _linkService.CreateLinkAsync(linkOriginal);
+                return Ok();
+            }
+            catch (InvalidDataException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetOriginalByShortened")]
         public async Task<IActionResult> GetOriginalLinkByShortenedURLAsync(string shortenedURL)
         {
-            var link = await _linkService.GetOriginalLinkByShortenedURLAsync(shortenedURL);
-            return Ok(link);
+            try
+            {
+                var link = await _linkService.GetOriginalLinkByShortenedURLAsync(shortenedURL);
+                return Ok(link);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> GetLinkByIdAsync(int id)
         {
-            var link = await _linkService.GetLinkByIdAsync(id);
-            return Ok(link);
+            try
+            {
+                var link = await _linkService.GetLinkByIdAsync(id);
+                return Ok(link);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllLinksAsync()
+        {
+            var links = await _linkService.GetAllLinksAsync();
+            return Ok(links);
         }
 
         [HttpDelete]
+        [Authorize(Roles = "Admin, User")]
         public async Task<IActionResult> DeleteLinkByIdAsync(int id)
         {
-            await _linkService.DeleteLinkByIdAsync(id);
-            return Ok();
+            try
+            {
+                await _linkService.DeleteLinkByIdAsync(id);
+                return Ok();
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
         }
     }
 }

@@ -1,13 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using URLShortener.Business.Interfaces;
 using URLShortener.Data.Entities;
 
@@ -72,11 +68,25 @@ namespace URLShortener.Business.Services
 
         public int GetUserIdFromToken()
         {
+            var userId = int.Parse(jwtSecurityToken().Claims.First(a => a.Type.Split('/').Last() == "nameidentifier").Value);
+
+            return userId;
+        }
+
+        public bool IsAdminFromToken()
+        {
+            var isAdmin = jwtSecurityToken().Claims.First(a => a.Type.Split('/').Last() == "role").Value;
+
+            return isAdmin == "Admin";
+        }
+
+        private JwtSecurityToken jwtSecurityToken()
+        {
             HttpContext context = _httpContextAccessor.HttpContext;
 
             string authorizationHeader = context.Request.Headers["Authorization"]!;
 
-            if(string.IsNullOrEmpty(authorizationHeader))
+            if (string.IsNullOrEmpty(authorizationHeader))
             {
                 throw new Exception("No token provided");
             }
@@ -87,10 +97,7 @@ namespace URLShortener.Business.Services
 
             var jwtToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
 
-            var userId = int.Parse(jwtToken.Claims.First(a => a.Type.Split('/').Last() == "nameidentifier").Value);
-
-
-            return userId;
+            return jwtToken;
         }
     }
 }
